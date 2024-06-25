@@ -36,26 +36,25 @@ def new_user():
         password = input("Enter a password: ")
         store_password(username, site, password)
         print("User successfully created")
-
+             
 def change_pass():
     username = input("Enter a username: ")
     site = input("Enter a site: ")
     if verify_usr(username, site):      
-        f=open("passwords.txt", "r")
-        if (f==IOError):
-            print("Aperture error")
-        else:         
-            for line in f.readlines():
-                new_lines = []
-                stored_username, stored_site, _ = line.strip().split(":")
-                if username!= stored_username or site!= stored_site:
-                    new_lines.append(line)
-            
-            password = input("Enter the new password: ")
-            store_password(username, site, password)
-            
-            with open("passwords.txt", "w") as f:
-                f.writelines(new_lines)
+        with open("passwords.txt", "r") as f:
+            lines = f.readlines()
+        
+        new_lines = []
+        for line in lines:
+            stored_username, stored_site, _ = line.strip().split(":")
+            if username!= stored_username or site!= stored_site:
+                new_lines.append(line)
+        
+        password = input("Enter the new password: ")
+        
+        with open("passwords.txt", "w") as f:
+            f.writelines(new_lines)    
+        store_password(username, site, password)       
     else:
         print("User not found")
 
