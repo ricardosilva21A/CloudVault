@@ -1,31 +1,31 @@
 from cryptography.fernet import Fernet
 
-# Gerar uma chave e salvá-la em um arquivo
-def gerar_chave():
-    chave = Fernet.generate_key()
-    with open("chave.key", "wb") as chave_file:
-        chave_file.write(chave)
+# Generate a key and save it to a file
+def generate_key():
+    key = Fernet.generate_key()
+    with open("key.key", "wb") as key_file:
+        key_file.write(key)
 
-# Exemplo de modificação da função carregar_chave para aceitar um argumento de caminho
-def carregar_chave(caminho_chave="chave.key"):
-    with open(caminho_chave, "rb") as chave_arquivo:
-        chave = chave_arquivo.read()
-    return chave
+# Example of modifying the load_key function to accept a file path argument
+def load_key(key_path="key.key"):
+    with open(key_path, "rb") as key_file:
+        key = key_file.read()
+    return key
 
-# Criptografar uma senha
-def criptografar_senha(senha):
-    chave = carregar_chave()
-    f = Fernet(chave)
-    senha_encriptada = f.encrypt(senha.encode())
-    return senha_encriptada
+# Encrypt a password
+def encrypt_password(passwords):
+    key = load_key()
+    fernet = Fernet(key)
+    encrypted_password = fernet.encrypt(passwords.encode())
+    return encrypted_password
 
-# Descriptografar uma senha
-def descriptografar_senha(senha_encriptada):
-    chave = carregar_chave()
-    f = Fernet(chave)
-    senha_decriptada = f.decrypt(senha_encriptada).decode()
-    return senha_decriptada
+# Decrypt a password
+def decrypt_password(encrypted_passwords):
+    key = load_key()
+    fernet = Fernet(key)
+    decrypted_password = fernet.decrypt(encrypted_passwords).decode()
+    return decrypted_password
 
-# Gerar a chave uma vez (execute apenas uma vez)
+# Generate the key once (execute only once)
 if __name__ == "__main__":
-    gerar_chave()
+    generate_key()
