@@ -67,17 +67,12 @@ def menu():
         while (ans!="6"):
             print("\n1.Add a password")
             print("2.Change a Student")
-            print("3.Look Up Student Record")
-            print("4.")
-            print("5.")
             print("6.Exit program")
             ans=input("\nWhat would you like to do?\n")
             if ans=="1": 
                 new_user()
             elif ans=="2":
                 change_pass()
-            elif ans=="3":
-                print("\n Student Record Found") 
             elif ans=="6":
                 print("\n Goodbye")
 
