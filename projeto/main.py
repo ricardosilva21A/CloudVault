@@ -4,17 +4,18 @@ import string
 import random
 import hashlib
 import pyperclip
-import customtkinter as ctk
+from PIL import Image, ImageTk  # Importing from PIL library
+import customtkinter as ctk  # Assuming this is your custom Tkinter library
 from encryption import encrypt_password, decrypt_password
 from database import create_db, add_password, get_passwords, search_passwords_by_site_user
 
-# Criar banco de dados se não existir
+# Create database if it doesn't exist
 create_db()
 
-# Define a master password (exemplo simples)
+# Define a master password (simple example)
 stored_master_password = hashlib.sha256("123".encode()).hexdigest()
 
-# Função para gerar uma senha segura com opções
+# Function to generate a secure password with options
 def generate_custom_password():
     top = tk.Toplevel()
     top.title("Generate Custom Password")
@@ -23,7 +24,7 @@ def generate_custom_password():
     label_title = ctk.CTkLabel(top, text="Custom Password Generator", font=("Arial", 16))
     label_title.pack(pady=10)
 
-    # Labels e Entry para comprimento da senha
+    # Labels and Entry for password length
     frame_length = ctk.CTkFrame(top)
     frame_length.pack(pady=10)
 
@@ -32,7 +33,7 @@ def generate_custom_password():
     entry_length = ctk.CTkEntry(frame_length, width=10)
     entry_length.grid(row=0, column=1, padx=10)
 
-    # Checkbuttons para opções de senha
+    # Checkbuttons for password options
     frame_options = ctk.CTkFrame(top)
     frame_options.pack(pady=10)
 
@@ -47,11 +48,11 @@ def generate_custom_password():
     check_symbols = ctk.CTkCheckBox(frame_options, text="Include Symbols", variable=var_symbols)
     check_symbols.grid(row=1, column=0, columnspan=2, padx=10, sticky="w")
 
-    # Botão para gerar senha
+    # Button to generate password
     btn_generate = ctk.CTkButton(top, text="Generate Password", command=lambda: generate_and_show_custom_password(top, entry_length.get(), var_uppercase.get(), var_numbers.get(), var_symbols.get()))
     btn_generate.pack(pady=10)
 
-    # Função para gerar e exibir a senha personalizada
+    # Function to generate and show custom password
     def generate_and_show_custom_password(top, length, include_uppercase, include_numbers, include_symbols):
         try:
             length = int(length)
@@ -74,13 +75,13 @@ def generate_custom_password():
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid number for the password length.")
 
-# Função para autenticar o usuário ao iniciar o programa
+# Function to authenticate the user at program start
 def authenticate_on_start():
     global stored_master_password
     while True:
         master_password_entered = tk.simpledialog.askstring("Authentication", "Enter your master password to access the password manager:", show='*')
         if master_password_entered is None:
-            exit()  # Se o usuário cancelar, sair do programa
+            exit()  # Exit the program if user cancels
         master_password_hash = hashlib.sha256(master_password_entered.encode()).hexdigest()
 
         if master_password_hash == stored_master_password:
@@ -89,7 +90,7 @@ def authenticate_on_start():
         else:
             tk.messagebox.showerror("Authentication Error", "Incorrect master password. Please try again.")
 
-# Função para adicionar senha
+# Function to add a password
 def add_password_ui():
     site = simpledialog.askstring("Site", "Site name:")
     user = simpledialog.askstring("User", "Username:")
@@ -103,24 +104,24 @@ def add_password_ui():
     add_password(site, user, encrypted_password)
     tk.messagebox.showinfo("Success", "Password added successfully!")
 
-# Função para exibir todas as senhas na lista de contas
+# Function to show all passwords in the accounts list
 def show_passwords_in_list():
     passwords = get_passwords()
 
-    # Limpar a lista atual
+    # Clear current list
     listbox_passwords.delete(0, tk.END)
 
     for password in passwords:
         site, _, _ = password[1], password[2], password[3]
         listbox_passwords.insert(tk.END, site)
 
-# Função para mostrar senhas filtradas por site ou usuário
+# Function to show passwords filtered by site or user
 def show_filtered_passwords(event=None):
     filter_text = entry_search.get()
 
     if filter_text:
         passwords = search_passwords_by_site_user(filter_text)
-        listbox_passwords.delete(0, tk.END)  # Limpar a lista atual
+        listbox_passwords.delete(0, tk.END)  # Clear current list
 
         for password in passwords:
             site, _, _ = password[1], password[2], password[3]
@@ -128,15 +129,14 @@ def show_filtered_passwords(event=None):
     else:
         show_passwords_in_list()
 
-# Função para exibir usuário e senha ao clicar na lista de contas
-# Função para exibir usuário e senha ao clicar na lista de contas
+# Function to show user and password when clicking on the accounts list
 def show_user_and_password(event):
     widget = event.widget
     if widget.curselection():
         index = int(widget.curselection()[0])
         site = widget.get(index)
 
-        master_password_entered = tk.simpledialog.askstring("Senha Mestra", "Digite sua senha mestra para visualizar a senha:", show='*')
+        master_password_entered = tk.simpledialog.askstring("Master Password", "Enter your master password to view the password:", show='*')
         master_password_hash = hashlib.sha256(master_password_entered.encode()).hexdigest()
 
         if master_password_hash == stored_master_password:
@@ -147,41 +147,40 @@ def show_user_and_password(event):
                 decrypted_password = decrypt_password(passwords[0][3])
                 pyperclip.copy(decrypted_password)
 
-                # Criar janela para exibir usuário e senha
+                # Create window to display user and password
                 top = tk.Toplevel()
-                top.title(f"Detalhes da Senha para {site}")
+                top.title(f"Password Details for {site}")
                 top.geometry("300x150")
 
-                label_user = tk.Label(top, text=f"Usuário: {user}", font=("Arial", 12))
+                label_user = tk.Label(top, text=f"User: {user}", font=("Arial", 12))
                 label_user.pack(pady=10)
 
-                label_password = tk.Label(top, text=f"Senha: {decrypted_password}", font=("Arial", 12))
+                label_password = tk.Label(top, text=f"Password: {decrypted_password}", font=("Arial", 12))
                 label_password.pack(pady=10)
 
-                # Botão para copiar para a área de transferência
-                btn_copy = tk.Button(top, text="Copiar para Clipboard", command=lambda: pyperclip.copy(decrypted_password))
+                # Button to copy to clipboard
+                btn_copy = tk.Button(top, text="Copy to Clipboard", command=lambda: pyperclip.copy(decrypted_password))
                 btn_copy.pack(pady=10)
 
-                # Focus para a janela
+                # Focus on the window
                 top.focus_force()
             else:
-                tk.messagebox.showerror("Erro", f"Não foi possível encontrar a senha para {site}.")
+                tk.messagebox.showerror("Error", f"Password not found for {site}.")
         else:
-            tk.messagebox.showerror("Erro de Autenticação", "Senha mestra incorreta.")
+            tk.messagebox.showerror("Authentication Error", "Incorrect master password.")
     else:
-        tk.messagebox.showerror("Erro de Seleção", "Por favor, selecione um item da lista.")
+        tk.messagebox.showerror("Selection Error", "Please select an item from the list.")
 
-
-# Criar o aplicativo principal
+# Create the main application
 app = ctk.CTk()
 app.geometry("400x400")
 app.title("Password Manager")
 
-# Widgets da interface principal
+# Widgets for the main interface
 label = ctk.CTkLabel(app, text="Password Manager")
 label.pack(pady=10)
 
-# Frame para a lista de senhas
+# Frame for the password list
 frame_list = ctk.CTkFrame(app)
 frame_list.pack(padx=20, pady=10, side=tk.LEFT, fill=tk.Y)
 
@@ -193,10 +192,10 @@ listbox_passwords.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
 
 scrollbar.configure(command=listbox_passwords.yview)
 
-# Evento para exibir usuário e senha ao clicar na lista
+# Event to show user and password when double-clicking on the list
 listbox_passwords.bind("<Double-Button-1>", show_user_and_password)
 
-# Frame para botões
+# Frame for buttons
 frame_buttons = ctk.CTkFrame(app)
 frame_buttons.pack(pady=10, padx=20, side=tk.TOP, fill=tk.X)
 
@@ -206,16 +205,16 @@ btn_add_password.pack(pady=5, padx=10, fill=tk.X)
 btn_generate_password = ctk.CTkButton(frame_buttons, text="Generate Password", command=generate_custom_password)
 btn_generate_password.pack(pady=5, padx=10, fill=tk.X)
 
-# Campo de pesquisa
+# Search field
 entry_search = ctk.CTkEntry(frame_buttons, placeholder_text="Search by site or user")
 entry_search.pack(pady=5, padx=10, fill=tk.X)
 entry_search.bind("<KeyRelease>", show_filtered_passwords)
 
-# Inicializar a lista de senhas
+# Initialize the password list
 show_passwords_in_list()
 
-# Autenticar ao iniciar o programa
+# Authenticate at program start
 authenticate_on_start()
 
-# Iniciar o aplicativo
+# Run the application
 app.mainloop()
