@@ -20,7 +20,7 @@ def connect_db():
     """
     @brief Connects to the SQLite database.
 
-    @return The database connection object.
+    @return A connection object or None if connection fails.
     """
     try:
         conn = sqlite3.connect('passwords.db')
@@ -114,26 +114,35 @@ def get_passwords():
         print("Failed to connect to database.")
         return []
 
-def search_passwords_by_site_user(site, user):
-    """
-    @brief Searches for passwords by site and username.
+def search_passwords_by_site_user(filter_text):
+    conn = sqlite3.connect('passwords.db')
+    c = conn.cursor()
 
-    @param site The site to search for.
-    @param user The username to search for.
-    @return A list of tuples containing the matching passwords.
+    # Consulta para buscar por site ou usuário
+    c.execute("SELECT * FROM passwords WHERE site LIKE ? OR username LIKE ?", ('%' + filter_text + '%', '%' + filter_text + '%'))
+    passwords = c.fetchall()
+
+    conn.close()
+    return passwords
+    
+
+def delete_password(site, username):
+    """
+    @brief Deletes an existing password from the database.
+
+    @param site The site associated with the password.
+    @param username The username associated with the password.
     """
     conn = connect_db()
     if conn:
         try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM passwords WHERE site=? AND username=?", (site, user))
-            passwords = cursor.fetchall()
-            return passwords
+            c = conn.cursor()
+            c.execute("DELETE FROM passwords WHERE site = ? AND username = ?", (site, username))
+            conn.commit()
+            print(f"Password deleted successfully for {site} and user {username}.")
         except sqlite3.Error as e:
-            print(f"Error searching passwords: {e}")
-            return []
+            print(f"Error deleting password: {e}")
         finally:
             conn.close()
     else:
         print("Failed to connect to database.")
-        return []

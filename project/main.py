@@ -24,7 +24,7 @@ import pyperclip
 from PIL import Image, ImageTk
 import customtkinter as ctk  # Assuming this is your custom Tkinter library
 from encryption import encrypt_password, decrypt_password
-from database import create_db, add_password, get_passwords, search_passwords_by_site_user
+from database import create_db, add_password, get_passwords, search_passwords_by_site_user, delete_password
 import os
 
 # Initialize or create the database
@@ -223,11 +223,26 @@ def add_password_ui():
         messagebox.showerror("Error", "All fields must be filled!")
         return
 
+    # Check if there's already a password for this site and user
+    existing_passwords = search_passwords_by_site_user(site, user)  # Pass both site and user
+    for existing_password in existing_passwords:
+        if existing_password[2] == user:
+            # Password already exists, ask user if they want to overwrite it
+            confirm_overwrite = messagebox.askyesno("Password Exists", f"A password already exists for {site} and user {user}. Do you want to overwrite it?")
+            if not confirm_overwrite:
+                return  # User chose not to overwrite, exit function
+
+            # If confirmed to overwrite, delete the existing password first
+            delete_password(site, user)
+            break  # No need to continue checking further if found and deleted
+
+    # Proceed to add the new password
     encrypted_password = encrypt_password(password)
     add_password(site, user, encrypted_password)
     messagebox.showinfo("Success", "Password added successfully!")
 
     show_passwords_in_list()  # Update the passwords list
+
 
 def show_passwords_in_list():
     """
@@ -277,6 +292,7 @@ def show_user_and_password(event):
         master_password_hash = hash_password(master_password_entered)
 
         if master_password_hash == stored_master_password:
+            # Call search_passwords_by_site_user with both site and user arguments
             passwords = search_passwords_by_site_user(site, user)
 
             if passwords:
@@ -344,9 +360,6 @@ btn_generate_password.pack(pady=5, padx=10, fill=tk.X)
 btn_add_example_passwords = ctk.CTkButton(frame_buttons, text="Add Example Passwords", command=add_example_passwords)
 btn_add_example_passwords.pack(pady=5, padx=10, fill=tk.X)
 
-btn_clear_all_data = ctk.CTkButton(frame_buttons, text="Clear All Data", command=clear_all_data)
-btn_clear_all_data.pack(pady=5, padx=10, fill=tk.X)
-
 # Search field
 entry_search = ctk.CTkEntry(frame_buttons, placeholder_text="Search by site or user")
 entry_search.pack(pady=5, padx=10, fill=tk.X)
@@ -375,3 +388,4 @@ authenticate_on_start()
 
 # Run the application
 app.mainloop()
+
