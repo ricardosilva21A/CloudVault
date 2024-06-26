@@ -186,7 +186,7 @@ def generate_custom_password():
             entry_generated_password.insert(0, generated_password)  # Display generated password
             entry_generated_password.configure(state="readonly")  # Disable modification
 
-            messagebox.showinfo("Generated Password", f"Your generated password is:\n{generated_password}")
+            messagebox.showinfo("Success!", f"Generated Password!")
 
             top.focus_force()
         except ValueError:
@@ -224,21 +224,14 @@ def add_password_ui():
         return
 
     # Check if there's already a password for this site and user
-    existing_passwords = search_passwords_by_site_user(site, user)  # Pass both site and user
-    for existing_password in existing_passwords:
-        if existing_password[2] == user:
-            # Password already exists, ask user if they want to overwrite it
-            confirm_overwrite = messagebox.askyesno("Password Exists", f"A password already exists for {site} and user {user}. Do you want to overwrite it?")
-            if not confirm_overwrite:
-                return  # User chose not to overwrite, exit function
-
-            # If confirmed to overwrite, delete the existing password first
-            delete_password(site, user)
-            break  # No need to continue checking further if found and deleted
+    existing_passwords = search_passwords_by_site_user(site=site, user=user)
+    if existing_passwords:
+        messagebox.showerror("Error", f"A password already exists for {site} and user {user}. Please choose a different username.")
+        return
 
     # Proceed to add the new password
     encrypted_password = encrypt_password(password)
-    add_password(site, user, encrypted_password)
+    add_password(site=site, username=user, encrypted_password=encrypted_password)
     messagebox.showinfo("Success", "Password added successfully!")
 
     show_passwords_in_list()  # Update the passwords list
@@ -257,22 +250,19 @@ def show_passwords_in_list():
         listbox_passwords.insert(tk.END, f"{site} | {user}")
 
 def show_filtered_passwords(event=None):
-    """
-    @brief Filters and displays passwords based on search criteria.
-
-    @param event The event (typically a key release in the search entry).
-    """
-    filter_text = entry_search.get()
+    filter_text = entry_search.get().strip()
 
     if filter_text:
-        passwords = search_passwords_by_site_user(filter_text)
-        listbox_passwords.delete(0, tk.END)  # Clear the current list
+        passwords = search_passwords_by_site_user(site=filter_text, user=filter_text)
+    else:
+        passwords = get_passwords()
 
+    listbox_passwords.delete(0, tk.END)
+
+    if passwords:
         for password in passwords:
             site, user, _ = password[1], password[2], password[3]
             listbox_passwords.insert(tk.END, f"{site} | {user}")
-    else:
-        show_passwords_in_list()
 
 def show_user_and_password(event):
     """
@@ -357,11 +347,11 @@ btn_add_password.pack(pady=5, padx=10, fill=tk.X)
 btn_generate_password = ctk.CTkButton(frame_buttons, text="Generate Password", command=generate_custom_password)
 btn_generate_password.pack(pady=5, padx=10, fill=tk.X)
 
-btn_add_example_passwords = ctk.CTkButton(frame_buttons, text="Add Example Passwords", command=add_example_passwords)
-btn_add_example_passwords.pack(pady=5, padx=10, fill=tk.X)
+# btn_add_example_passwords = ctk.CTkButton(frame_buttons, text="Add Example Passwords", command=add_example_passwords)
+# btn_add_example_passwords.pack(pady=5, padx=10, fill=tk.X)
 
 # Search field
-entry_search = ctk.CTkEntry(frame_buttons, placeholder_text="Search by site or user")
+entry_search = ctk.CTkEntry(frame_buttons, placeholder_text="Search by site")
 entry_search.pack(pady=5, padx=10, fill=tk.X)
 entry_search.bind("<KeyRelease>", show_filtered_passwords)
 

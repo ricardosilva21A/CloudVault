@@ -1,26 +1,10 @@
-"""
-@file database.py
-@brief Functions for database operations in the Password Manager.
-
-Authors:
-- Ricardo Silva
-- Guillermo
-- Saúl
-
-@date 2024
-@version 1.0
-@note SAP: PYTHON 2024
-
-This module provides functions to connect to the database, create tables, add, search, and update passwords.
-"""
-
 import sqlite3
 
 def connect_db():
     """
     @brief Connects to the SQLite database.
 
-    @return A connection object or None if connection fails.
+    @return Connection object if successful, None otherwise.
     """
     try:
         conn = sqlite3.connect('passwords.db')
@@ -31,7 +15,9 @@ def connect_db():
 
 def create_db():
     """
-    @brief Creates the passwords table if it does not exist.
+    @brief Creates the passwords table in the SQLite database if it doesn't exist.
+
+    @details This function creates a table named 'passwords' with columns for id, site, username, and password.
     """
     conn = connect_db()
     if conn:
@@ -45,20 +31,30 @@ def create_db():
             print(f"Error creating table: {e}")
         finally:
             conn.close()
-    else:
-        print("Failed to connect to database.")
 
 def add_password(site, username, encrypted_password):
     """
     @brief Adds a new password to the database.
 
-    @param site The site associated with the password.
-    @param username The username associated with the password.
-    @param encrypted_password The encrypted password.
+    @param site The site for which the password is stored.
+    @param username The username for the site.
+    @param encrypted_password The encrypted password to be stored.
     """
     conn = connect_db()
     if conn:
         try:
+            # Check if there's already an entry with the same site and username
+            existing_passwords = search_passwords_by_site_user(site=site, user=username)
+            if existing_passwords:
+                # Ask user if they want to overwrite the existing password
+                print(f"A password entry already exists for site '{site}' and username '{username}':")
+                print(existing_passwords)
+                overwrite = input("Do you want to overwrite it? (y/n): ").strip().lower()
+                if overwrite != 'y':
+                    print("Operation canceled.")
+                    return
+            
+            # If not overwriting or no existing entry, proceed to add the password
             c = conn.cursor()
             c.execute("INSERT INTO passwords (site, username, password) VALUES (?, ?, ?)", (site, username, encrypted_password))
             conn.commit()
@@ -67,16 +63,14 @@ def add_password(site, username, encrypted_password):
             print(f"Error adding password: {e}")
         finally:
             conn.close()
-    else:
-        print("Failed to connect to database.")
 
 def update_password(site, username, encrypted_password):
     """
     @brief Updates an existing password in the database.
 
-    @param site The site associated with the password.
-    @param username The username associated with the password.
-    @param encrypted_password The new encrypted password.
+    @param site The site for which the password is stored.
+    @param username The username for the site.
+    @param encrypted_password The new encrypted password to be stored.
     """
     conn = connect_db()
     if conn:
@@ -89,14 +83,12 @@ def update_password(site, username, encrypted_password):
             print(f"Error updating password: {e}")
         finally:
             conn.close()
-    else:
-        print("Failed to connect to database.")
 
 def get_passwords():
     """
     @brief Retrieves all passwords from the database.
 
-    @return A list of tuples containing all passwords.
+    @return A list of tuples containing the passwords.
     """
     conn = connect_db()
     if conn:
@@ -110,28 +102,38 @@ def get_passwords():
             return []
         finally:
             conn.close()
-    else:
-        print("Failed to connect to database.")
-        return []
+    return []
 
-def search_passwords_by_site_user(filter_text):
-    conn = sqlite3.connect('passwords.db')
+def search_passwords_by_site_user(site=None, user=None):
+    """
+    @brief Searches for passwords by site and/or username.
+
+    @param site The site to search for.
+    @param user The username to search for.
+    @return A list of tuples containing the matching passwords.
+    """
+    conn = connect_db()
     c = conn.cursor()
 
-    # Consulta para buscar por site ou usuário
-    c.execute("SELECT * FROM passwords WHERE site LIKE ? OR username LIKE ?", ('%' + filter_text + '%', '%' + filter_text + '%'))
-    passwords = c.fetchall()
+    if site and user:
+        c.execute("SELECT * FROM passwords WHERE site LIKE ? AND username LIKE ?", ('%' + site + '%', '%' + user + '%'))
+    elif site:
+        c.execute("SELECT * FROM passwords WHERE site LIKE ?", ('%' + site + '%',))
+    elif user:
+        c.execute("SELECT * FROM passwords WHERE username LIKE ?", ('%' + user + '%',))
+    else:
+        c.execute("SELECT * FROM passwords")
 
+    passwords = c.fetchall()
     conn.close()
     return passwords
-    
 
 def delete_password(site, username):
     """
-    @brief Deletes an existing password from the database.
+    @brief Deletes a password from the database.
 
-    @param site The site associated with the password.
-    @param username The username associated with the password.
+    @param site The site for which the password is stored.
+    @param username The username for the site.
     """
     conn = connect_db()
     if conn:
@@ -144,5 +146,14 @@ def delete_password(site, username):
             print(f"Error deleting password: {e}")
         finally:
             conn.close()
-    else:
-        print("Failed to connect to database.")
+
+# Testando a função add_password() com um exemplo
+if __name__ == "__main__":
+    create_db()  # Certifica-se de que o banco de dados e a tabela existam
+
+    # Exemplo de uso da função add_password()
+    site = "google.com"
+    username = "tdbem"
+    encrypted_password = "oi"
+
+    add_password(site, username, encrypted_password)
