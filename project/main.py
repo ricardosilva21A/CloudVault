@@ -4,7 +4,7 @@
 
 Authors:
 - Ricardo Silva
-- Guillermo
+- Guillermo hola
 - Saúl
 
 @date 2024
