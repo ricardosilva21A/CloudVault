@@ -4,8 +4,8 @@
 
 Authors:
 - Ricardo Silva
-- Guillermo hola
-- Saúl
+- Guillermo López de Arechavaleta
+- Saúl Sauca
 
 @date 2024
 @version 1.0
