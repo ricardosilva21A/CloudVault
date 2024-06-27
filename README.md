@@ -24,6 +24,12 @@ This is a simple password manager application built with Python and Tkinter, des
 
 Ensure you have Python installed. Install the required Python packages:
 
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+- **Explanation:** This addition instructs users to install dependencies listed in the `requirements.txt` file using `pip`. It assumes you have a file named `requirements.txt` containing necessary Python packages.
+
    ```bash
    git clone https://github.com/your-username/password-manager.git
    cd password-manager
@@ -41,11 +47,21 @@ python encryption.py
 1. Run the application:
 
 ```bash
+python encryption.py
+``` 
+
+```bash
+python database.py
+``` 
+
+- **Explanation:** First to load the encryption and database files
+
+```bash
 python main.py
 ``` 
 
 2. **Authentication:**
-- On first launch, you will be prompted to enter a master password (default is '123' for demonstration purposes).
+- On first launch, you will be prompted to enter set a master password (default is '123' for demonstration purposes).
 - Enter this master password to access the password manager.
 
 3. **Functionality:**
