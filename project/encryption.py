@@ -12,9 +12,9 @@ Authors:
 @note SAP: PYTHON 2024
 
 This module provides functions to generate encryption keys, encrypt passwords, and decrypt passwords
-using the cryptography.fernet library.
+using the cryptography.fernet library. and you will need to install cryptography library by doing " pip install cryptography "
 """
-
+    
 from cryptography.fernet import Fernet
 
 def generate_key():
@@ -39,7 +39,7 @@ def load_key(key_path="key.key"):
 def encrypt_password(password):
     """
     @brief Encrypts a password using the loaded encryption key.
-
+    first we convert the password into bytes using encode then we encrypt her using fernet.
     @param password The password to encrypt.
     @return The encrypted password as bytes.
     """
@@ -51,7 +51,7 @@ def encrypt_password(password):
 def decrypt_password(encrypted_password):
     """
     @brief Decrypts an encrypted password using the loaded encryption key.
-
+    there we do the opposite 
     @param encrypted_password The encrypted password to decrypt (as bytes).
     @return The decrypted password as a string.
     """

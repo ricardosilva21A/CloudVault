@@ -36,12 +36,13 @@ MASTER_PASSWORD_FILE = "master_password.txt"
 def hash_password(password):
     """
     @brief Hashes the given password using SHA-256.
-
+    need to import hashlib
+    The sha256 function from the hashlib library is used to create the hash of the password. The hexdigest() method is then called to get the hexadecimal representation of the hash.
     @param password The password to hash.
     @return The hashed password as a hexadecimal string.
     """
-    return hashlib.sha256(password.encode()).hexdigest()
-
+    return hashlib.sha256(password.encode()).hexdigest() #Conversion to Hexadecimal: The hexdigest() method converts the hash from bytes to a hexadecimal string, which is easier to store and handle.
+    # add a salt so even if 2 users have the same password they will have 2 different hashes.
 def save_master_password(password_hash):
     """
     @brief Saves the hashed master password to a file.
