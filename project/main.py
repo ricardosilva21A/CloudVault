@@ -24,7 +24,7 @@ import pyperclip
 from PIL import Image, ImageTk
 import customtkinter as ctk  # Assuming this is your custom Tkinter library
 from encryption import encrypt_password, decrypt_password
-from database import create_db, add_password, get_passwords, search_passwords_by_site_user, delete_password
+from database import create_db, add_password, get_passwords, search_passwords_by_site_user, delete_password, update_password
 import os
 
 # Initialize or create the database
@@ -214,7 +214,7 @@ def add_password_ui():
     """
     @brief Prompts the user to add a new password to the database.
 
-    Encrypts the password and adds it to the database.
+    Encrypts the password and adds it to the database, or updates it if the user chooses to overwrite an existing password.
     """
     site = simpledialog.askstring("Site", "Site name:")
     user = simpledialog.askstring("User", "Username:")
@@ -227,8 +227,23 @@ def add_password_ui():
     # Check if there's already a password for this site and user
     existing_passwords = search_passwords_by_site_user(site=site, user=user)
     if existing_passwords:
-        messagebox.showerror("Error", f"A password already exists for {site} and user {user}. Please choose a different username.")
-        return
+        overwrite = messagebox.askyesno("Overwrite Confirmation", f"A password already exists for {site} and user {user}. Do you want to overwrite it?")
+        if not overwrite:
+            messagebox.showinfo("Cancelled", "Password addition was cancelled.")
+            return
+
+        # Proceed to update the existing password
+        encrypted_password = encrypt_password(password)
+        update_password(site=site, username=user, encrypted_password=encrypted_password)
+        messagebox.showinfo("Success", "Password updated successfully!")
+    else:
+        # Proceed to add the new password
+        encrypted_password = encrypt_password(password)
+        add_password(site=site, username=user, encrypted_password=encrypted_password)
+        messagebox.showinfo("Success", "Password added successfully!")
+
+    show_passwords_in_list()  # Update the passwords list
+
 
     # Proceed to add the new password
     encrypted_password = encrypt_password(password)
